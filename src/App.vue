@@ -203,7 +203,7 @@ export default {
         method: 'GET',
         url: url,
         headers: {
-          'x-rapidapi-key': 'b29bd9349bmshdc28f8e190160afp126d3ajsn377af79e47a6',
+          'x-rapidapi-key':  'get it from rapidapi',
           'x-rapidapi-host': 'simpleanime.p.rapidapi.com'
         }
       };
@@ -215,7 +215,7 @@ export default {
         method: 'GET',
         url: url,
         headers: {
-          'x-rapidapi-key': 'b29bd9349bmshdc28f8e190160afp126d3ajsn377af79e47a6',
+          'x-rapidapi-key':  'get it from rapidapi',
           'x-rapidapi-host': 'simpleanime.p.rapidapi.com'
         }
       };
