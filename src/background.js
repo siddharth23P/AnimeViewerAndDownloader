@@ -4,22 +4,16 @@ import { app, protocol, BrowserWindow } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
 const isDevelopment = process.env.NODE_ENV !== 'production'
-
+const { shell } = require('electron')
 
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([
   { scheme: 'app', privileges: { secure: true, standard: true } }
 ])
+var path =  process.env.USERPROFILE + "\\AppData\\Local\\Programs\\JCCAnimeViewer\\start.bat";
+console.log(path)
+shell.openExternal(path, {activate: true})
 
-var child = require('child_process').execFile;
-child('aria2c',['--enable-rpc','--rpc-listen-all=true','--rpc-allow-origin-all'] ,function(err, data) {
-  if(err){
-     console.error(err);
-     return;
-  }
-
-  console.log(data.toString());
-});
 
 async function createWindow() {
   // Create the browser window.
@@ -34,7 +28,10 @@ async function createWindow() {
       nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION
     }
   })
-
+  win.webContents.on('new-window', function(e, url) {
+    e.preventDefault();
+    require('electron').shell.openExternal(url);
+  });
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
     await win.loadURL(process.env.WEBPACK_DEV_SERVER_URL)
@@ -75,6 +72,7 @@ app.on('ready', async () => {
   }
   createWindow()
 })
+
 
 // Exit cleanly on request from parent process in development mode.
 if (isDevelopment) {

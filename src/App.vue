@@ -1,51 +1,61 @@
 <template>
   <div id="app">
-    <div v-if="loading">
-        <img class="loader" src="./assets/loader.gif"/>
+    <div v-if="Noapikey">
+      <input type="text" name="Api" v-model="apiKey" v-on:keyup.enter="Api">
+      <input type="submit" value="Api" @click="Api" >
+      <br>
+      <h6>Get api key from <a  target="_blank" href="https://rapidapi.com/kuronekony4n/api/simpleanime/endpoints">simpleanime</a></h6>
     </div>
     <div v-else>
-      <video autoplay muted loop id="myVideo">
-        <source src="./assets/walpaper.mp4" type="video/mp4">
-      </video>
-      <div class="Nav">
-        <button @click="back()">Prev</button>
-        <button @click="next()">Next</button>
-        <button :class="{toggled: isToggled}" @click="isToggled = !isToggled">Show Download</button>
+      <div v-if="loading">
+          <img class="loader" src="./assets/loader.gif"/>
       </div>
-      <div :class="{Search: isClose ,Search2: !isClose}">
-        <img class="icon" src="./assets/search.png" @click="isClose = !isClose"/>
-        <input type="text" name="Search" v-model="animeName" v-on:keyup.enter="validate">
-        <input type="submit" value="Search" @click="validate" >
-      </div>
-      <div class="downloads" :class="{hidden: isToggled}">
-        <button @click="Downloads()">Download All</button>
-        <button :class="{toggled: isToggled}" @click="isToggled = !isToggled">Hide Download</button>
-        <ol>
-          <li v-for="(anime,index) in downloads" :key="index">
-            <h2>{{anime.title}}</h2>
-            <h3>{{anime.status}}</h3>
-          </li>
-        </ol>
-      </div>
-      <div class="anime" v-if="streamif">
+      <div v-else>
+        <video autoplay muted loop id="myVideo">
+          <source src="./assets/walpaper.mp4" type="video/mp4">
+        </video>
+        <div class="Nav">
+          <button @click="back()">Prev</button>
+          <button @click="next()">Next</button>
+          <button @click="reapi()">Change Api Key</button>
+          <button v-if="!showif" @click="addtoDl()">Add all to Download</button>
+          <button :class="{toggled: isToggled}" @click="isToggled = !isToggled">Show Download</button>
+        </div>
+        <div :class="{Search: isClose ,Search2: !isClose}">
+          <img class="icon" src="./assets/search.png" @click="isClose = !isClose"/>
+          <input type="text" name="Search" v-model="animeName" v-on:keyup.enter="validate">
+          <input type="submit" value="Search" @click="validate" >
+        </div>
+        <div class="downloads" :class="{hidden: isToggled}">
+          <button @click="Downloads()">Download All</button>
+          <button :class="{toggled: isToggled}" @click="isToggled = !isToggled">Hide Download</button>
+          <ol>
+            <li v-for="(anime,index) in downloads" :key="index">
+              <h2>{{anime.title}}</h2>
+              <h3>{{anime.status}}</h3>
+            </li>
+          </ol>
+        </div>
+        <div class="anime" v-if="streamif">
         
-        <ol v-if="showif">
-          <li v-for="(anime,index) in result" :key="index">
-            <img :src="anime.cover" @click="show(anime.vid_id)"/>
-            <h2>{{anime.title}}</h2>
-          </li>
-        </ol>
-        <ol v-else>
-          <li v-for="(anime,index) in anime" :key="index">
-            <img :src="anime.cover" @click="stream(anime.vid_id)"/>
-            <h2>{{anime.episode}}</h2>
-            <button @click="download(anime.vid_id)">Add to Download</button>
-          </li>
-        </ol>
-      </div>
-      <div v-else class="streamer">
-        <iframe :src="streamurl">
-        </iframe>
+          <ol v-if="showif">
+            <li v-for="(anime,index) in result" :key="index">
+              <img :src="anime.cover" @click="show(anime.vid_id)"/>
+              <h2>{{anime.title}}</h2>
+            </li>
+          </ol>
+          <ol v-else>
+            <li v-for="(anime,index) in anime" :key="index">
+              <img :src="anime.cover" @click="stream(anime.vid_id)"/>
+              <h2>{{anime.episode}}</h2>
+              <button @click="download(anime.vid_id)">Add to Download</button>
+            </li>
+          </ol>
+        </div>
+        <div v-else class="streamer">
+          <iframe :src="streamurl">
+          </iframe>
+        </div>
       </div>
     </div>
   </div>
@@ -59,6 +69,7 @@ export default {
   
   data(){
     return{
+      apiKey:"",
       animeName:"",
       result:[],
       anime:[],
@@ -71,28 +82,44 @@ export default {
       isToggled:true,
       loading: false,
       isClose:true,
+      Noapikey:true,
     }
   },
-  async mounted() {
+  mounted() {
     this.loading = true
-    var axios = require("axios").default;
-
-    var options = {
-      method: 'GET',
-      url: 'https://simpleanime.p.rapidapi.com/anime/list/recent',
-      headers: {
-        'x-rapidapi-key': 'b29bd9349bmshdc28f8e190160afp126d3ajsn377af79e47a6',
-        'x-rapidapi-host': 'simpleanime.p.rapidapi.com'
-      }
-    };
-
-    var x = axios.request(options).finally(() => (this.loading = false));
-      
-    this.result = (await x).data.data;
-    this.showif = 1;
-    this.streamif = 1;
+    if (this.$cookies.isKey("apiKey")){
+      this.apiKey = this.$cookies.get("apiKey");
+      this.Noapikey = this.$cookies.get("Noapikey");
+    }
   },
   methods:{
+    async InitMyApp(){
+      var axios = require("axios").default;
+
+      var options = {
+        method: 'GET',
+        url: 'https://simpleanime.p.rapidapi.com/anime/list/recent',
+        headers: {
+          'x-rapidapi-key': this.apiKey,
+          'x-rapidapi-host': 'simpleanime.p.rapidapi.com'
+        }
+      };
+
+      var x = axios.request(options).finally(() => (this.loading = false));
+        
+      this.result = (await x).data.data;
+      this.showif = 1;
+      this.streamif = 1;
+    },
+    Api(){
+      this.Noapikey=false;
+      this.$cookies.set("apiKey", this.apiKey);
+      this.$cookies.set("Noapikey",this.Noapikey);
+      this.InitMyApp();
+    },
+    reapi(){
+      this.Noapikey=true;
+    },
     back(){
       if(this.showif==0)
         if(this.streamif==0){
@@ -118,7 +145,7 @@ export default {
         method: 'GET',
         url: url,
         headers: {
-          'x-rapidapi-key': 'b29bd9349bmshdc28f8e190160afp126d3ajsn377af79e47a6',
+          'x-rapidapi-key': this.apiKey,
           'x-rapidapi-host': 'simpleanime.p.rapidapi.com'
         }
       };
@@ -139,7 +166,7 @@ export default {
         method: 'GET',
         url: url,
         headers: {
-          'x-rapidapi-key': 'b29bd9349bmshdc28f8e190160afp126d3ajsn377af79e47a6',
+          'x-rapidapi-key': this.apiKey,
           'x-rapidapi-host': 'simpleanime.p.rapidapi.com'
         }
       };
@@ -159,7 +186,7 @@ export default {
         method: 'GET',
         url: url,
         headers: {
-          'x-rapidapi-key': 'b29bd9349bmshdc28f8e190160afp126d3ajsn377af79e47a6',
+          'x-rapidapi-key': this.apiKey,
           'x-rapidapi-host': 'simpleanime.p.rapidapi.com'
         }
       };
@@ -202,6 +229,12 @@ export default {
         "status":"Not Downloaded",
       })
     },
+    async addtoDl(){
+      for(var x in this.anime){
+        this.download(this.anime[x].vid_id);
+      }
+      this.$swal("All episodes added to download")
+    },
     async Downloads(){
       this.$swal("Download Started")
       aria2
@@ -209,8 +242,9 @@ export default {
       .then(() => console.log("open"))
       .catch(err => console.log("error", err));
       var batch = []
+      var path =  process.env.USERPROFILE + "\\Downloads\\jcc";
       for(var x in this.downloads){
-        batch.push(["addUri",[this.downloads[x].dlink],{dir:"/tmp"}])
+        batch.push(["addUri",[this.downloads[x].dlink],{dir:path}])
       }
       await aria2.batch(batch);
       var i =0;
